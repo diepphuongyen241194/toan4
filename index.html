@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game toán lớp 2 - nhiều dạng bài kéo thả</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f3f7ff;
+      color: #1f2937;
+    }
+    h1 {
+      text-align: center;
+      margin: 0 0 8px;
+    }
+    .sub {
+      text-align: center;
+      color: #475569;
+      margin-bottom: 18px;
+    }
+    .panel {
+      max-width: 1200px;
+      margin: 0 auto 18px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .bank {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .digit {
+      width: 54px;
+      height: 54px;
+      border-radius: 12px;
+      background: #3b82f6;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      cursor: grab;
+      user-select: none;
+      box-shadow: 0 4px 10px rgba(59,130,246,0.25);
+    }
+    .toolbar, .filters, .score {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    button, select {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+    button {
+      background: #2563eb;
+      color: #fff;
+      cursor: pointer;
+    }
+    button.secondary { background: #64748b; }
+    button.success { background: #16a34a; }
+    button.orange { background: #ea580c; }
+    select {
+      background: #eef2ff;
+      color: #111827;
+      border: 1px solid #c7d2fe;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+      border: 2px solid transparent;
+    }
+    .card.correct {
+      border-color: #22c55e;
+      background: #f0fff4;
+    }
+    .card.wrong {
+      border-color: #ef4444;
+      background: #fff5f5;
+    }
+    .title {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .meta {
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    .guide {
+      font-size: 14px;
+      color: #475569;
+      margin-bottom: 10px;
+    }
+    .resultText {
+      min-height: 24px;
+      margin-top: 12px;
+      font-weight: 700;
+    }
+    .hint {
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .mathBlock {
+      display: inline-block;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.8;
+      letter-spacing: 3px;
+      margin-top: 6px;
+    }
+    .row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      min-height: 46px;
+    }
+    .symbol {
+      width: 30px;
+      text-align: center;
+      margin-right: 6px;
+    }
+    .spacer {
+      width: 30px;
+      margin-right: 6px;
+    }
+    .digitCell {
+      width: 46px;
+      text-align: center;
+      margin-left: 6px;
+    }
+    .drop {
+      width: 46px;
+      height: 46px;
+      border: 2px dashed #94a3b8;
+      border-radius: 10px;
+      margin-left: 6px;
+      background: #f8fbff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #0f172a;
+    }
+    .drop.small {
+      width: 34px;
+      height: 34px;
+      font-size: 18px;
+      background: #fff8db;
+      border-color: #f59e0b;
+    }
+    .line {
+      border-top: 3px solid #111827;
+      margin: 4px 0;
+    }
+    .btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .equationLine {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 30px;
+      font-weight: 700;
+      margin: 12px 0 4px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #e0e7ff;
+      color: #3730a3;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <h1>Game toán lớp 2 - kéo thả số 0 đến 9</h1>
+  <div class="sub">Nhiều dạng bài cộng trừ có nhớ trong phạm vi 1000</div>
+
+  <div class="panel">
+    <strong>Bộ số kéo thả</strong>
+    <div class="bank" id="digitBank"></div>
+
+    <div class="filters">
+      <select id="typeFilter" onchange="renderQuestions()">
+        <option value="all">Tất cả dạng bài</option>
+        <option value="add_vertical">Cộng đặt tính có nhớ</option>
+        <option value="sub_vertical">Trừ đặt tính có mượn</option>
+        <option value="missing_add">Điền số còn thiếu phép cộng</option>
+        <option value="missing_sub">Điền số còn thiếu phép trừ</option>
+        <option value="compare_result">Điền kết quả đúng</option>
+      </select>
+    </div>
+
+    <div class="toolbar">
+      <button onclick="checkAll()">Kiểm tra tất cả</button>
+      <button class="secondary" onclick="resetAll()">Làm lại tất cả</button>
+      <button class="success" onclick="showAnswers()">Hiện đáp án</button>
+      <button class="orange" onclick="shuffleQuestions()">Đổi thứ tự bài</button>
+    </div>
+
+    <div class="score">
+      <div><strong>Tổng bài hiển thị:</strong> <span id="totalVisible">0</span></div>
+      <div><strong>Đã kiểm tra:</strong> <span id="checkedCount">0</span></div>
+      <div><strong>Làm đúng:</strong> <span id="correctCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="container" id="container"></div>
+
+  <script>
+    const questions = [
+      // ===== DẠNG 1: CỘNG ĐẶT TÍNH CÓ NHỚ =====
+      {
+        index: 101,
+        type: "add_vertical",
+        title: "Bài 1",
+        instruction: "Kéo số vào ô nhớ và ô kết quả.",
+        num1: [3, 4, 5],
+        num2: [2, 7, 8],
+        carry: [1, 1],
+        result: [6, 2, 3]
+      },
+      {
+        index: 102,
+        type: "add_vertical",
+        title: "Bài 2",
+        instruction: "Kéo số vào ô nhớ và ô kết quả.",
+        num1: [4, 6, 7],
+        num2: [1, 8, 5],
+        carry: [1, 1],
+        result: [6, 5, 2]
+      },
+      {
+        index: 103,
+        type: "add_vertical",
+        title: "Bài 3",
+        instruction: "Kéo số vào ô nhớ và ô kết quả.",
+        num1: [5, 2, 9],
+        num2: [3, 7, 6],
+        carry: [1, 0],
+        result: [9, 0, 5]
+      },
+      {
+        index: 104,
+        type: "add_vertical",
+        title: "Bài 4",
+        instruction: "Kéo số vào ô nhớ và ô kết quả.",
+        num1: [6, 8, 4],
+        num2: [2, 5, 7],
+        carry: [1, 1],
+        result: [9, 4, 1]
+      },
+
+      // ===== DẠNG 2: TRỪ ĐẶT TÍNH CÓ MƯỢN =====
+      {
+        index: 201,
+        type: "sub_vertical",
+        title: "Bài 5",
+        instruction: "Kéo số vào ô mượn và ô kết quả.",
+        num1: [6, 5, 4],
+        num2: [2, 7, 8],
+        carry: [1, 1],
+        result: [3, 7, 6]
+      },
+      {
+        index: 202,
+        type: "sub_vertical",
+        title: "Bài 6",
+        instruction: "Kéo số vào ô mượn và ô kết quả.",
+        num1: [7, 0, 3],
+        num2: [1, 8, 5],
+        carry: [1, 1],
+        result: [5, 1, 8]
+      },
+      {
+        index: 203,
+        type: "sub_vertical",
+        title: "Bài 7",
+        instruction: "Kéo số vào ô mượn và ô kết quả.",
+        num1: [8, 2, 0],
+        num2: [3, 6, 7],
+        carry: [1, 1],
+        result: [4, 5, 3]
+      },
+      {
+        index: 204,
+        type: "sub_vertical",
+        title: "Bài 8",
+        instruction: "Kéo số vào ô mượn và ô kết quả.",
+        num1: [9, 4, 1],
+        num2: [4, 5, 8],
+        carry: [1, 1],
+        result: [4, 8, 3]
+      },
+
+      // ===== DẠNG 3: ĐIỀN SỐ CÒN THIẾU PHÉP CỘNG =====
+      {
+        index: 301,
+        type: "missing_add",
+        title: "Bài 9",
+        instruction: "Kéo số còn thiếu vào ô trống.",
+        layout: ["drop", 4, 5, "+", 1, 2, 3, "=", 5, 6, 8],
+        answers: [4]
+      },
+      {
+        index: 302,
+        type: "missing_add",
+        title: "Bài 10",
+        instruction: "Kéo số còn thiếu vào ô trống.",
+        layout: [3, "drop", 7, "+", 2, 1, 5, "=", 5, 5, 2],
+        answers: [4]
+      },
+      {
+        index: 303,
+        type: "missing_add",
+        title: "Bài 11",
+        instruction: "Kéo số còn thiếu vào ô trống.",
+        layout: [2, 8, 6, "+", "drop", 4, 3, "=", 7, 2, 9],
+        answers: [4]
+      },
+      {
+        index: 304,
+        type: "missing_add",
+        title: "Bài 12",
+        instruction: "Kéo số còn thiếu vào ô trống.",
+        layout: [1, 9, 8, "+", 2, 0, 5, "=", 4, "drop", 3],
+        answers: [0]
+      },
+
+      // ===== DẠNG 4: ĐIỀN SỐ CÒN THIẾU PHÉP TRỪ =====
+      {
+        index: 401,
+        type: "missing_sub",
+        title: "Bài 13",
+        instruction: "Kéo số còn thiếu vào ô trống.",
+        layout: ["drop", 3, 6, "-", 1, 2, 4, "=", 5, 1, 2],
+        answers: [6]
+      },
+      {
+        index: 402,
+        type: "missing_sub",
+        title: "Bài 14",
+        instruction: "Kéo số còn thiếu vào ô trống.",
+        layout: [8, "drop", 5, "-", 3, 2, 1, "=", 5, 2, 4],
+        answers: [4]
+      },
+      {
+        index: 403,
+        type: "missing_sub",
+        title: "Bài 15",
+        instruction: "Kéo số còn thiếu vào ô trống.",
+        layout: [7, 0, 0, "-", "drop", 5, 8, "=", 4, 4, 2],
+        answers: [2]
+      },
+      {
+        index: 404,
+        type: "missing_sub",
+        title: "Bài 16",
+        instruction: "Kéo số còn thiếu vào ô trống.",
+        layout: [9, 1, 3, "-", 4, 2, 7, "=", "drop", 8, 6],
+        answers: [4]
+      },
+
+      // ===== DẠNG 5: ĐIỀN KẾT QUẢ ĐÚNG =====
+      {
+        index: 501,
+        type: "compare_result",
+        title: "Bài 17",
+        instruction: "Kéo từng chữ số vào kết quả.",
+        expression: { left: [2, 4, 8], op: "+", right: [3, 5, 7] },
+        result: [6, 0, 5]
+      },
+      {
+        index: 502,
+        type: "compare_result",
+        title: "Bài 18",
+        instruction: "Kéo từng chữ số vào kết quả.",
+        expression: { left: [6, 0, 2], op: "-", right: [2, 7, 5] },
+        result: [3, 2, 7]
+      },
+      {
+        index: 503,
+        type: "compare_result",
+        title: "Bài 19",
+        instruction: "Kéo từng chữ số vào kết quả.",
+        expression: { left: [4, 9, 6], op: "+", right: [2, 0, 8] },
+        result: [7, 0, 4]
+      },
+      {
+        index: 504,
+        type: "compare_result",
+        title: "Bài 20",
+        instruction: "Kéo từng chữ số vào kết quả.",
+        expression: { left: [8, 4, 0], op: "-", right: [3, 5, 6] },
+        result: [4, 8, 4]
+      }
+    ];
+
+    const state = {};
+    questions.forEach(q => {
+      if (q.type === "add_vertical" || q.type === "sub_vertical") {
+        state[q.index] = { carry: ["", ""], result: ["", "", ""], checked: false, correct: false };
+      } else if (q.type === "missing_add" || q.type === "missing_sub") {
+        state[q.index] = { answers: q.answers.map(() => ""), checked: false, correct: false };
+      } else if (q.type === "compare_result") {
+        state[q.index] = { result: ["", "", ""], checked: false, correct: false };
+      }
+    });
+
+    function createDigitBank() {
+      const bank = document.getElementById("digitBank");
+      bank.innerHTML = "";
+      for (let i = 0; i <= 9; i++) {
+        const d = document.createElement("div");
+        d.className = "digit";
+        d.draggable = true;
+        d.textContent = i;
+        d.dataset.value = i;
+        d.addEventListener("dragstart", e => {
+          e.dataTransfer.setData("text/plain", e.target.dataset.value);
+        });
+        bank.appendChild(d);
+      }
+    }
+
+    function allowDrop(e) { e.preventDefault(); }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      const value = e.dataTransfer.getData("text/plain");
+      const box = e.currentTarget;
+      box.textContent = value;
+
+      const qindex = Number(box.dataset.qindex);
+      const group = box.dataset.group;
+      const pos = Number(box.dataset.pos);
+
+      if (group === "carry" || group === "result" || group === "answers") {
+        state[qindex][group][pos] = value;
+      }
+    }
+
+    function makeDrop(qindex, group, pos, small = false) {
+      const div = document.createElement("div");
+      div.className = `drop ${small ? "small" : ""}`;
+      div.dataset.qindex = qindex;
+      div.dataset.group = group;
+      div.dataset.pos = pos;
+      div.addEventListener("dragover", allowDrop);
+      div.addEventListener("drop", handleDrop);
+      div.addEventListener("dblclick", () => {
+        div.textContent = "";
+        state[qindex][group][pos] = "";
+      });
+      return div;
+    }
+
+    function makeDigitCell(value) {
+      const div = document.createElement("div");
+      div.className = "digitCell";
+      div.textContent = value;
+      return div;
+    }
+
+    function arraysEqual(a, b) {
+      return a.length === b.length && a.every((v, i) => String(v) === String(b[i]));
+    }
+
+    function visibleQuestions() {
+      const type = document.getElementById("typeFilter").value;
+      if (type === "all") return questions;
+      return questions.filter(q => q.type === type);
+    }
+
+    function renderQuestions() {
+      const list = visibleQuestions();
+      const container = document.getElementById("container");
+      container.innerHTML = "";
+
+      list.forEach(q => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.id = `card-${q.index}`;
+
+        const tagText = {
+          add_vertical: "Cộng đặt tính có nhớ",
+          sub_vertical: "Trừ đặt tính có mượn",
+          missing_add: "Điền số còn thiếu phép cộng",
+          missing_sub: "Điền số còn thiếu phép trừ",
+          compare_result: "Điền kết quả"
+        }[q.type];
+
+        const tag = document.createElement("div");
+        tag.className = "tag";
+        tag.textContent = tagText;
+
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = `${q.title}`;
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.textContent = `index: ${q.index}`;
+
+        const guide = document.createElement("div");
+        guide.className = "guide";
+        guide.textContent = q.instruction;
+
+        card.appendChild(tag);
+        card.appendChild(title);
+        card.appendChild(meta);
+        card.appendChild(guide);
+
+        if (q.type === "add_vertical" || q.type === "sub_vertical") {
+          card.appendChild(renderVerticalQuestion(q));
+        }
+
+        if (q.type === "missing_add" || q.type === "missing_sub") {
+          card.appendChild(renderMissingQuestion(q));
+        }
+
+        if (q.type === "compare_result") {
+          card.appendChild(renderCompareQuestion(q));
+        }
+
+        const btns = document.createElement("div");
+        btns.className = "btns";
+
+        const checkBtn = document.createElement("button");
+        checkBtn.textContent = "Kiểm tra bài này";
+        checkBtn.onclick = () => checkQuestion(q.index);
+
+        const resetBtn = document.createElement("button");
+        resetBtn.className = "secondary";
+        resetBtn.textContent = "Làm lại";
+        resetBtn.onclick = () => resetQuestion(q.index);
+
+        btns.appendChild(checkBtn);
+        btns.appendChild(resetBtn);
+        card.appendChild(btns);
+
+        const resultText = document.createElement("div");
+        resultText.className = "resultText";
+        resultText.id = `result-${q.index}`;
+        card.appendChild(resultText);
+
+        const hint = document.createElement("div");
+        hint.className = "hint";
+        hint.textContent = "Nháy đúp vào ô để xóa số đã kéo.";
+        card.appendChild(hint);
+
+        container.appendChild(card);
+      });
+
+      updateScore();
+      document.getElementById("totalVisible").textContent = list.length;
+    }
+
+    function renderVerticalQuestion(q) {
+      const math = document.createElement("div");
+      math.className = "mathBlock";
+
+      const carryRow = document.createElement("div");
+      carryRow.className = "row";
+      carryRow.appendChild(Object.assign(document.createElement("div"), { className: "spacer" }));
+      carryRow.appendChild(makeDigitCell(""));
+      carryRow.appendChild(makeDrop(q.index, "carry", 1, true));
+      carryRow.appendChild(makeDrop(q.index, "carry", 0, true));
+
+      const row1 = document.createElement("div");
+      row1.className = "row";
+      row1.appendChild(Object.assign(document.createElement("div"), { className: "spacer" }));
+      q.num1.forEach(n => row1.appendChild(makeDigitCell(n)));
+
+      const row2 = document.createElement("div");
+      row2.className = "row";
+      const symbol = document.createElement("div");
+      symbol.className = "symbol";
+      symbol.textContent = q.type === "add_vertical" ? "+" : "-";
+      row2.appendChild(symbol);
+      q.num2.forEach(n => row2.appendChild(makeDigitCell(n)));
+
+      const line = document.createElement("div");
+      line.className = "line";
+
+      const row3 = document.createElement("div");
+      row3.className = "row";
+      row3.appendChild(Object.assign(document.createElement("div"), { className: "spacer" }));
+      row3.appendChild(makeDrop(q.index, "result", 0));
+      row3.appendChild(makeDrop(q.index, "result", 1));
+      row3.appendChild(makeDrop(q.index, "result", 2));
+
+      math.appendChild(carryRow);
+      math.appendChild(row1);
+      math.appendChild(row2);
+      math.appendChild(line);
+      math.appendChild(row3);
+      return math;
+    }
+
+    function renderMissingQuestion(q) {
+      const line = document.createElement("div");
+      line.className = "equationLine";
+
+      let dropPos = 0;
+
+      q.layout.forEach(item => {
+        if (item === "drop") {
+          line.appendChild(makeDrop(q.index, "answers", dropPos, false));
+          dropPos++;
+        } else {
+          const span = document.createElement("span");
+          span.textContent = item;
+          span.style.minWidth = ["+", "-", "="].includes(String(item)) ? "18px" : "auto";
+          line.appendChild(span);
+        }
+      });
+
+      return line;
+    }
+
+    function renderCompareQuestion(q) {
+      const box = document.createElement("div");
+      box.className = "equationLine";
+
+      q.expression.left.forEach(n => {
+        const span = document.createElement("span");
+        span.textContent = n;
+        box.appendChild(span);
+      });
+
+      const op = document.createElement("span");
+      op.textContent = q.expression.op;
+      box.appendChild(op);
+
+      q.expression.right.forEach(n => {
+        const span = document.createElement("span");
+        span.textContent = n;
+        box.appendChild(span);
+      });
+
+      const eq = document.createElement("span");
+      eq.textContent = "=";
+      box.appendChild(eq);
+
+      box.appendChild(makeDrop(q.index, "result", 0));
+      box.appendChild(makeDrop(q.index, "result", 1));
+      box.appendChild(makeDrop(q.index, "result", 2));
+
+      return box;
+    }
+
+    function checkQuestion(index) {
+      const q = questions.find(x => x.index === index);
+      const card = document.getElementById(`card-${index}`);
+      const resultText = document.getElementById(`result-${index}`);
+      let ok = false;
+
+      if (q.type === "add_vertical" || q.type === "sub_vertical") {
+        ok = arraysEqual(state[index].carry, q.carry) && arraysEqual(state[index].result, q.result);
+      }
+
+      if (q.type === "missing_add" || q.type === "missing_sub") {
+        ok = arraysEqual(state[index].answers, q.answers);
+      }
+
+      if (q.type === "compare_result") {
+        ok = arraysEqual(state[index].result, q.result);
+      }
+
+      state[index].checked = true;
+      state[index].correct = ok;
+
+      card.classList.remove("correct", "wrong");
+      if (ok) {
+        card.classList.add("correct");
+        resultText.textContent = "Chính xác!";
+      } else {
+        card.classList.add("wrong");
+        resultText.textContent = "Chưa đúng, em hãy thử lại.";
+      }
+
+      updateScore();
+    }
+
+    function resetQuestion(index) {
+      const q = questions.find(x => x.index === index);
+
+      if (q.type === "add_vertical" || q.type === "sub_vertical") {
+        state[index] = { carry: ["", ""], result: ["", "", ""], checked: false, correct: false };
+      }
+      if (q.type === "missing_add" || q.type === "missing_sub") {
+        state[index] = { answers: q.answers.map(() => ""), checked: false, correct: false };
+      }
+      if (q.type === "compare_result") {
+        state[index] = { result: ["", "", ""], checked: false, correct: false };
+      }
+
+      document.querySelectorAll(`[data-qindex="${index}"]`).forEach(el => el.textContent = "");
+      const card = document.getElementById(`card-${index}`);
+      const resultText = document.getElementById(`result-${index}`);
+      if (card) card.classList.remove("correct", "wrong");
+      if (resultText) resultText.textContent = "";
+
+      updateScore();
+    }
+
+    function resetAll() {
+      questions.forEach(q => resetQuestion(q.index));
+    }
+
+    function checkAll() {
+      visibleQuestions().forEach(q => checkQuestion(q.index));
+    }
+
+    function showAnswers() {
+      visibleQuestions().forEach(q => {
+        if (q.type === "add_vertical" || q.type === "sub_vertical") {
+          document.querySelectorAll(`[data-qindex="${q.index}"][data-group="carry"]`).forEach(el => {
+            const pos = Number(el.dataset.pos);
+            el.textContent = q.carry[pos];
+            state[q.index].carry[pos] = String(q.carry[pos]);
+          });
+
+          document.querySelectorAll(`[data-qindex="${q.index}"][data-group="result"]`).forEach(el => {
+            const pos = Number(el.dataset.pos);
+            el.textContent = q.result[pos];
+            state[q.index].result[pos] = String(q.result[pos]);
+          });
+        }
+
+        if (q.type === "missing_add" || q.type === "missing_sub") {
+          document.querySelectorAll(`[data-qindex="${q.index}"][data-group="answers"]`).forEach(el => {
+            const pos = Number(el.dataset.pos);
+            el.textContent = q.answers[pos];
+            state[q.index].answers[pos] = String(q.answers[pos]);
+          });
+        }
+
+        if (q.type === "compare_result") {
+          document.querySelectorAll(`[data-qindex="${q.index}"][data-group="result"]`).forEach(el => {
+            const pos = Number(el.dataset.pos);
+            el.textContent = q.result[pos];
+            state[q.index].result[pos] = String(q.result[pos]);
+          });
+        }
+
+        checkQuestion(q.index);
+      });
+    }
+
+    function updateScore() {
+      const visible = visibleQuestions().map(q => q.index);
+      const checked = visible.filter(id => state[id].checked).length;
+      const correct = visible.filter(id => state[id].correct).length;
+      document.getElementById("checkedCount").textContent = checked;
+      document.getElementById("correctCount").textContent = correct;
+    }
+
+    function shuffleQuestions() {
+      for (let i = questions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [questions[i], questions[j]] = [questions[j], questions[i]];
+      }
+      renderQuestions();
+    }
+
+    createDigitBank();
+    renderQuestions();
+  </script>
+</body>
+</html>
